@@ -1,5 +1,10 @@
-export const BOOKS_PER_BAY = 96;
-export const SHELF_CAPACITY = BOOKS_PER_BAY * 6;
+import { BAYS } from './walk.ts';
+export const COLUMNS_PER_SHELF = 5;
+export const ROWS_PER_SIDE = 4;
+export const BOOKS_PER_SIDE = COLUMNS_PER_SHELF * ROWS_PER_SIDE;
+export const BOOKS_PER_BAY = BOOKS_PER_SIDE * 2;
+export const bookColumnX = (column:number):number => -1.92 + column * .96;
+export const SHELF_CAPACITY = BOOKS_PER_BAY * BAYS.length;
 /** Spread a partial last page across the whole room instead of leaving entire bays empty. */
 export function shelfBookIndex(slot:number,count:number,page:number):number|undefined {
   if(!Number.isInteger(slot)||slot<0||slot>=SHELF_CAPACITY||count<=0||page<0)return undefined;
@@ -14,7 +19,7 @@ export function shelfLocation(index:number,count:number):{page:number;bay:number
   const page=Math.floor(index/SHELF_CAPACITY);
   for(let slot=0;slot<SHELF_CAPACITY;slot++)if(shelfBookIndex(slot,count,page)===index){
     const local=slot%BOOKS_PER_BAY;
-    return {page,bay:Math.floor(slot/BOOKS_PER_BAY),side:local<48?-1:1,row:Math.floor((local%48)/12),column:local%12};
+    return {page,bay:Math.floor(slot/BOOKS_PER_BAY),side:local<BOOKS_PER_SIDE?-1:1,row:Math.floor((local%BOOKS_PER_SIDE)/COLUMNS_PER_SHELF),column:local%COLUMNS_PER_SHELF};
   }
   return undefined;
 }

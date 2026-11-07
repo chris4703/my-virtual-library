@@ -2,7 +2,7 @@ import { BAYS, stepPosition } from './walk.ts';
 import { readingRoomRenderer } from './rendering.ts';
 import { createReadingRoom } from './room.ts';
 import { LibraryShelves } from './shelves.ts';
-import { SHELF_CAPACITY, shelfLocation } from './shelf-layout.ts';
+import { SHELF_CAPACITY, shelfLocation, bookColumnX } from './shelf-layout.ts';
 import { renderBookDetails } from './inspection.ts';
 import { CollectionBrowser } from './browser.ts';
 import * as THREE from 'three';
@@ -27,9 +27,9 @@ renderer.domElement.setAttribute('aria-label', 'Library walking view');
 
 const room=createReadingRoom(renderer),scene=room.scene;
 const camera=new THREE.PerspectiveCamera(62,innerWidth/innerHeight,.08,70);
-camera.rotation.order='YXZ';camera.position.set(0,1.75,11);
+camera.rotation.order='YXZ';camera.position.set(0,1.75,20);
 const pipeline=readingRoomRenderer(renderer,scene,camera);
-const shelves=new LibraryShelves(room,()=>{renderRequested=true;renderer.shadowMap.needsUpdate=true;});
+const shelves=new LibraryShelves(room,(shadows)=>{renderRequested=true;if(shadows)renderer.shadowMap.needsUpdate=true;});
 renderer.shadowMap.autoUpdate=false;
 const raycaster=new THREE.Raycaster();raycaster.far=8;
 const pointer=new THREE.Vector2();
@@ -68,7 +68,7 @@ function locateBook(book:Book):void{
   const location=shelfLocation(index,books.length);if(!location)return;
   if(openBase&&shelfPage!==location.page){shelfPage=location.page;stockShelves();}
   const bay=BAYS[location.bay];
-  camera.position.set(bay.x-2.18+location.column*.39,1.75,bay.z+location.side*2.2);
+  camera.position.set(bay.x+bookColumnX(location.column),1.75,bay.z+location.side*2.2);
   yaw=location.side>0?0:Math.PI;pitch=Math.atan2(.62+location.row*.93-1.75,1.8);
   details.hidden=true;browse.hidden=true;keys.clear();renderRequested=true;renderer.domElement.focus();
 }
@@ -84,7 +84,7 @@ document.querySelector('#close-browse')!.addEventListener('click',()=>{browse.hi
 document.querySelector('#close')!.addEventListener('click',closeDetails);
 let yaw=0,pitch=0;
 const keys=new Set<string>();
-function reset():void{details.hidden=true;browse.hidden=true;camera.position.set(0,1.75,11);yaw=0;pitch=0;renderRequested=true;keys.clear();renderer.domElement.focus();}
+function reset():void{details.hidden=true;browse.hidden=true;camera.position.set(0,1.75,20);yaw=0;pitch=0;renderRequested=true;keys.clear();renderer.domElement.focus();}
 document.querySelector('#home')!.addEventListener('click',reset);
 document.querySelector('#reading-nook')!.addEventListener('click',()=>{details.hidden=true;browse.hidden=true;camera.position.set(0,1.75,-6.25);yaw=0;pitch=.05;renderRequested=true;keys.clear();renderer.domElement.focus();});
 window.addEventListener('keydown',event=>{
