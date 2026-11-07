@@ -1,32 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>My Virtual Library — Bookstore Prototype</title>
-  <style>
-    :root { color-scheme: dark; font-family: system-ui, sans-serif; background: #171917; color: #f8ecd5; }
-    body { margin: 0; overflow: hidden; }
-    #stage { position: fixed; inset: 0; }
-    .top { position: fixed; top: 18px; left: 20px; z-index: 2; padding: 14px 18px; background: #111b17e8; border: 1px solid #b5966266; border-radius: 14px; max-width: min(88vw, 450px); }
-    h1 { margin: 0 0 4px; font: 600 24px Georgia,serif; }
-    p { margin: 0; line-height: 1.45; color: #e1d3b8; }
-    .hint { margin-top: 8px; font-size: 13px; }
-    aside { position: fixed; z-index: 3; right: 20px; bottom: 20px; width: min(360px, calc(100vw - 72px)); padding: 22px; border-radius: 16px; border: 1px solid #c0a57b; background: #18231ef2; box-shadow: 0 10px 50px #0008; }
-    aside[hidden] { display: none; }
-    aside h2 { font: 600 25px Georgia,serif; margin: 10px 0; }
-    aside p { margin: 10px 0; }
-    button { background: #e2c48d; color: #17221a; border: 0; border-radius: 8px; padding: 9px 13px; font-weight: 700; cursor: pointer; }
-    button:focus-visible { outline: 3px solid white; outline-offset: 3px; }
-    #close { float: right; }
-    footer { position: fixed; left: 20px; bottom: 20px; z-index: 2; font-size: 13px; background: #111b17e8; padding: 10px 14px; border-radius: 10px; }
-  </style>
-</head>
-<body>
-  <div id="stage" role="img" aria-label="Interactive three dimensional library shelves"></div>
-  <header class="top"><h1>My Virtual Library</h1><p>A first look at your future walkable bookshelf.</p><p class="hint">Click a book spine to inspect it. Press A / D or arrow keys to look left or right.</p></header>
-  <aside id="details" hidden aria-live="polite"><button id="close" aria-label="Close book details">Close</button><div id="book-info"></div></aside>
-  <footer>Prototype — original sample titles only. Reading and listening are not implemented yet.</footer>
-  <script type="module" src="/src/books/preview.ts"></script>
-</body>
-</html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>My Virtual Library — The Reading Room</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,sans-serif;color:#f4ead7;background:#172321}*{box-sizing:border-box}body{margin:0;overflow:hidden}#stage{position:fixed;inset:0}button,input{font:inherit}button{cursor:pointer;border:1px solid #d2b87a66;border-radius:7px;background:#223a34;color:#f4ead7;padding:10px 14px}button:hover{background:#37564b}button:focus-visible,input:focus-visible{outline:3px solid #e5c88b;outline-offset:3px}.top{position:fixed;top:24px;left:28px;right:28px;display:flex;justify-content:space-between;gap:16px;align-items:start;pointer-events:none}.brand{background:#12231fdf;padding:18px 24px;border:1px solid #b69a6066;border-radius:10px;backdrop-filter:blur(12px)}.eyebrow{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#d5b97e}h1{font:32px Georgia,serif;margin:5px 0}p{line-height:1.6;color:#cbbfa8} .brand p{font-size:12px;margin:0}.actions{display:flex;gap:8px;pointer-events:auto}#reticle{position:fixed;left:50%;top:50%;width:5px;height:5px;border-radius:50%;background:#fff9;pointer-events:none}#hint{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#12231fe8;padding:9px 18px;border-radius:30px;font-size:12px;text-align:center;pointer-events:none}footer{position:fixed;bottom:22px;left:28px;right:28px;display:flex;justify-content:space-between;align-items:end;gap:12px;font-size:11px;color:#ddd1b7}.controls{background:#12231fe8;padding:12px 16px;border-radius:8px;line-height:1.8}.touch{display:flex;gap:5px}.touch button{min-width:42px;touch-action:none}aside{position:fixed;right:24px;top:110px;bottom:100px;width:min(420px,calc(100vw - 48px));overflow:auto;background:#12231ff5;border:1px solid #a9905e;border-radius:12px;padding:25px;box-shadow:0 20px 80px #0008}aside[hidden]{display:none}h2{font:32px Georgia,serif;margin:12px 0}#close{float:right}.cover{width:130px;min-height:175px;display:flex;align-items:center;justify-content:center;text-align:center;padding:16px;background:linear-gradient(135deg,#466f62,#182f2b);border:4px double #c8ad75;box-shadow:8px 8px 0 #dccca4;color:#f6e5bd;font:22px Georgia;margin:10px 0 24px}.tag{display:inline-block;padding:5px 9px;border:1px solid #a88b5555;border-radius:20px;font-size:11px;margin:4px}#browse{left:24px;right:auto}input{width:100%;padding:12px;background:#0b1916;border:1px solid #927b4f;color:#fff;border-radius:6px;margin:12px 0}.book-row{width:100%;text-align:left;margin:5px 0;display:block}.book-row small{display:block;color:#cbbfa8;margin-top:4px}#results{padding:0;list-style:none}#notice{font-size:12px} @media(max-width:650px){.top{top:12px;left:12px;right:12px}.brand{padding:12px}h1{font-size:20px;white-space:nowrap}.brand{min-width:0;padding:10px}.brand .eyebrow{font-size:8px;letter-spacing:.16em}.actions button{font-size:11px;padding:9px}.brand p{display:none}.actions{flex-direction:column}footer{left:12px;right:12px;bottom:12px}.controls{font-size:10px;max-width:190px}footer>span{display:none}#hint{bottom:110px;width:85%}aside{top:105px;bottom:110px;right:12px}#browse{left:12px}}
+</style></head><body>
+<div id="stage" role="img" aria-label="Walkable three dimensional library with bookshelves and a reading lounge"></div>
+<header class="top"><div class="brand"><span class="eyebrow">A place for every story</span><h1>My Virtual Library</h1><p>THE READING ROOM &nbsp; / &nbsp; 12 ORIGINAL TITLES</p></div><nav class="actions" aria-label="Library"><button id="catalog">Browse books</button><button id="home">Return to entrance</button></nav></header>
+<div id="reticle"></div><div id="hint" aria-live="polite">Explore the aisles · click a book to discover its story</div>
+<aside id="details" hidden aria-label="Book details"><button id="close">Close</button><div id="book-info"></div></aside>
+<aside id="browse" hidden aria-label="Browse library"><button id="close-browse">Close</button><h2>The collection</h2><label for="search">Find a title, author, or genre</label><input id="search" type="search" placeholder="Search the shelves…"/><p id="count" aria-live="polite"></p><ul id="results"></ul></aside>
+<footer><div class="controls">WASD / ↑↓ to walk · ←→ to turn<br>Drag to look · click a spine · Esc to close</div><span>DEVELOPMENT PREVIEW · SAMPLE CATALOG<br>Reading & listening are not yet connected</span><div class="touch" aria-label="Movement controls"><button data-move="ArrowLeft" aria-label="Turn left">↶</button><button data-move="w" aria-label="Walk forward">↑</button><button data-move="s" aria-label="Walk backward">↓</button><button data-move="ArrowRight" aria-label="Turn right">↷</button></div></footer>
+<script type="module" src="/src/books/preview.ts"></script></body></html>

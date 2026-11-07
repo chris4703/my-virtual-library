@@ -28,3 +28,16 @@ Open `http://localhost:1420/book-preview.html`. For a local clone, normal Git us
 - The first prototype is **not** the full Halcyon conversion; it's an isolated test scene with fictional book metadata.
 - WebGL support depends on the browser/device. Use current Chrome, Firefox, Safari or Edge with hardware acceleration enabled.
 - Existing `npm run check` remains the main build/test gate.
+
+## Reading room preview
+
+`/book-preview.html` now opens the standalone reading room with six double-sided shelf units, original sample book textures, timber flooring, pendant lights, and a rear reading lounge. The twelve fictional titles repeat across the shelves as demonstration stock; they are not a connected personal catalog.
+
+- Walk with WASD or up/down arrows. Turn with left/right arrows, or drag the scene to look around.
+- On touch screens, hold the bottom movement buttons and drag the scene to look.
+- Shelf and room bounds stop walking through shelves or out of the room.
+- Click a nearby book spine to inspect its title, author, description, and formats.
+- Browse books offers an accessible searchable list by title, author, and genre. Escape closes panels; Return to entrance resets the view.
+- Reading and audiobook playback remain unimplemented; the interface explicitly identifies the sample catalog.
+
+Verification: run `npm run check` and manually check walking, shelf collision, entrance reset, spine selection, search by author and genre, empty search results, and the collection/details panels at a narrow phone viewport.
