@@ -1,12 +1,46 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>My Virtual Library — The Reading Room</title>
-<style>
-:root{color-scheme:dark;font-family:system-ui,sans-serif;color:#f4ead7;background:#172321}*{box-sizing:border-box}body{margin:0;overflow:hidden}#stage{position:fixed;inset:0}button,input{font:inherit}button{cursor:pointer;border:1px solid #d2b87a66;border-radius:7px;background:#223a34;color:#f4ead7;padding:10px 14px}button:hover{background:#37564b}button:focus-visible,input:focus-visible{outline:3px solid #e5c88b;outline-offset:3px}.top{position:fixed;top:24px;left:28px;right:28px;display:flex;justify-content:space-between;gap:16px;align-items:start;pointer-events:none}.brand{background:#12231fdf;padding:18px 24px;border:1px solid #b69a6066;border-radius:10px;backdrop-filter:blur(12px)}.eyebrow{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#d5b97e}h1{font:32px Georgia,serif;margin:5px 0}p{line-height:1.6;color:#cbbfa8} .brand p{font-size:12px;margin:0}.actions{display:flex;gap:8px;pointer-events:auto}#reticle{position:fixed;left:50%;top:50%;width:5px;height:5px;border-radius:50%;background:#fff9;pointer-events:none}#hint{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#12231fe8;padding:9px 18px;border-radius:30px;font-size:12px;text-align:center;pointer-events:none}footer{position:fixed;bottom:22px;left:28px;right:28px;display:flex;justify-content:space-between;align-items:end;gap:12px;font-size:11px;color:#ddd1b7}.controls{background:#12231fe8;padding:12px 16px;border-radius:8px;line-height:1.8}.touch{display:flex;gap:5px}.touch button{min-width:42px;touch-action:none}aside{position:fixed;right:24px;top:110px;bottom:100px;width:min(420px,calc(100vw - 48px));overflow:auto;background:#12231ff5;border:1px solid #a9905e;border-radius:12px;padding:25px;box-shadow:0 20px 80px #0008}aside[hidden],button[hidden]{display:none}.cover.artwork{min-height:0;padding:0;border:0;background:none;box-shadow:none;display:block}.cover img{width:100%;height:auto;display:block}a{color:#ead8ac}.metadata{display:grid;grid-template-columns:80px 1fr;gap:10px;font-size:12px;line-height:1.6}.metadata dt{color:#d2b87a}.metadata dd{margin:0;color:#cbbfa8;overflow-wrap:anywhere}#notice{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}#notice a{display:inline-block;padding:10px 14px;border:1px solid #d2b87a88;border-radius:7px;text-decoration:none;background:#37564b}.actions{flex-wrap:wrap;justify-content:flex-end;max-width:55%}#source-notice{max-width:320px}.book-row{overflow-wrap:anywhere}h2{font:32px Georgia,serif;margin:12px 0}#close{float:right}.cover{width:130px;min-height:175px;display:flex;align-items:center;justify-content:center;text-align:center;padding:16px;background:linear-gradient(135deg,#466f62,#182f2b);border:4px double #c8ad75;box-shadow:8px 8px 0 #dccca4;color:#f6e5bd;font:22px Georgia;margin:10px 0 24px}.tag{display:inline-block;padding:5px 9px;border:1px solid #a88b5555;border-radius:20px;font-size:11px;margin:4px}#browse{left:24px;right:auto}input{width:100%;padding:12px;background:#0b1916;border:1px solid #927b4f;color:#fff;border-radius:6px;margin:12px 0}.book-row{width:100%;text-align:left;margin:5px 0;display:block}.book-row small{display:block;color:#cbbfa8;margin-top:4px}#results{padding:0;list-style:none}#notice{font-size:12px} @media(max-width:650px){.top{top:12px;left:12px;right:12px}.brand{padding:12px}h1{font-size:20px;white-space:nowrap}.brand{min-width:0;padding:10px}.brand .eyebrow{font-size:8px;letter-spacing:.16em}.actions button{font-size:11px;padding:9px}.brand p{display:none}.actions{flex-direction:column;gap:4px;max-width:43%}.actions button{padding:6px;font-size:10px}.brand{max-width:55%}footer{left:12px;right:12px;bottom:12px}.controls{font-size:10px;max-width:190px}footer>span{display:none}#hint{bottom:110px;width:85%}aside{top:105px;bottom:110px;right:12px}#browse{left:12px}}
-</style></head><body>
-<div id="stage" role="img" aria-label="Walkable three dimensional library with bookshelves and a reading lounge"></div>
-<header class="top"><div class="brand"><span class="eyebrow">A place for every story</span><h1>My Virtual Library</h1><p id="collection-label">THE READING ROOM &nbsp; / &nbsp; 12 ORIGINAL TITLES</p></div><nav class="actions" aria-label="Library"><button id="connect-library">Load Audiobookshelf</button><button id="catalog">Browse books</button><button id="next-shelves" hidden>Next shelves</button><button id="home">Return to entrance</button></nav></header>
-<div id="reticle"></div><div id="hint" aria-live="polite">Explore the aisles · click a book to discover its story</div>
-<aside id="details" hidden aria-label="Book details"><button id="close">Close</button><div id="book-info"></div></aside>
-<aside id="browse" hidden aria-label="Browse library"><button id="close-browse">Close</button><h2>The collection</h2><label for="search">Find a title, author, or genre</label><input id="search" type="search" placeholder="Search the shelves…"/><p id="count" aria-live="polite"></p><ul id="results"></ul></aside>
-<footer><div class="controls">WASD / ↑↓ to walk · ←→ to turn<br>Drag to look · click a spine · Esc to close</div><span id="source-notice" aria-live="polite">SAMPLE CATALOG · Load Audiobookshelf to connect your collection</span><div class="touch" aria-label="Movement controls"><button data-move="ArrowLeft" aria-label="Turn left">↶</button><button data-move="w" aria-label="Walk forward">↑</button><button data-move="s" aria-label="Walk backward">↓</button><button data-move="ArrowRight" aria-label="Turn right">↷</button></div></footer>
-<script type="module" src="/src/books/preview.ts"></script></body></html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#142b24" />
+  <title>My Virtual Library — The Reading Room</title>
+  <link rel="stylesheet" href="/src/books/preview.css" />
+</head>
+<body>
+  <div id="stage" role="img" aria-label="Walkable three dimensional library with arched windows, bookshelves and a reading lounge"></div>
+  <div class="scene-shade" aria-hidden="true"></div>
+  <header class="top">
+    <div class="brand"><span class="eyebrow">The reading room</span><h1>My Virtual Library<span class="brand-mark" aria-hidden="true">✦</span></h1><p id="collection-label">A PLACE FOR EVERY STORY</p></div>
+    <div class="top-right">
+      <div class="connection"><span class="status-dot" aria-hidden="true"></span><button id="connect-library">Load Audiobookshelf</button></div>
+      <nav class="actions" aria-label="Library">
+        <button id="catalog" class="primary">Browse books</button>
+        <button id="next-shelves" hidden>Next shelves</button>
+        <button id="reading-nook">Reading nook</button>
+        <button id="home">Entrance</button>
+      </nav>
+    </div>
+  </header>
+  <div id="reticle" aria-hidden="true"></div>
+  <div id="hint" aria-live="polite">Walk between the shelves · find a story to get lost in</div>
+  <aside id="details" hidden aria-label="Book details">
+    <div class="panel-heading"><span class="eyebrow">From the shelves</span><button id="close" aria-label="Close book details">Close ×</button></div>
+    <div id="book-info"></div>
+  </aside>
+  <aside id="browse" hidden aria-label="Browse library">
+    <div class="panel-heading"><span class="eyebrow">Your collection</span><button id="close-browse" aria-label="Close collection">Close ×</button></div>
+    <div class="browse-intro"><h2>Find your next chapter.</h2><label for="search">Search title, author, series, or genre</label><input id="search" type="search" placeholder="What would you like to discover?" autocomplete="off"/>
+      <div class="filters"><label>Format<select id="format-filter"><option value="all">All formats</option><option value="audio">Audiobooks</option><option value="ebook">E-books</option></select></label><label>Sort by<select id="sort-books"><option value="title">Title</option><option value="author">Author</option></select></label></div>
+      <p id="count" aria-live="polite"></p>
+    </div>
+    <div class="collection-scroll"><ul id="results"></ul><button id="more-books" hidden>Show more</button></div>
+  </aside>
+  <footer>
+    <div class="controls"><span class="keycap">W A S D</span><span>or arrows to walk<br>Drag to look · E to inspect</span></div>
+    <span id="source-notice" aria-live="polite">A quiet place for your collection. Connect Audiobookshelf to begin.</span>
+    <div class="touch" aria-label="Movement controls"><button data-move="ArrowLeft" aria-label="Turn left">↶</button><button data-move="w" aria-label="Walk forward">↑</button><button data-move="s" aria-label="Walk backward">↓</button><button data-move="ArrowRight" aria-label="Turn right">↷</button></div>
+  </footer>
+  <script type="module" src="/src/books/preview.ts"></script>
+</body>
+</html>
