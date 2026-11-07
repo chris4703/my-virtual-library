@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#142b24" />
+  <title>My Virtual Library — The Reading Room</title>
+  <link rel="stylesheet" href="/src/books/preview.css" />
+</head>
+<body>
+  <div id="stage" role="img" aria-label="Walkable three dimensional library with arched windows, bookshelves and a reading lounge"></div>
+  <div class="scene-shade" aria-hidden="true"></div>
+  <header class="top">
+    <div class="brand"><span class="eyebrow">The reading room</span><h1>My Virtual Library<span class="brand-mark" aria-hidden="true">✦</span></h1><p id="collection-label">A PLACE FOR EVERY STORY</p></div>
+    <div class="top-right">
+      <div class="connection"><span class="status-dot" aria-hidden="true"></span><button id="connect-library">Load Audiobookshelf</button></div>
+      <nav class="actions" aria-label="Library">
+        <button id="catalog" class="primary">Browse books</button>
+        <button id="next-shelves" hidden>Next shelves</button>
+        <button id="reading-nook">Reading nook</button>
+        <button id="home">Entrance</button>
+      </nav>
+    </div>
+  </header>
+  <div id="reticle" aria-hidden="true"></div>
+  <div id="hint" aria-live="polite">Walk between the shelves · find a story to get lost in</div>
+  <aside id="details" hidden aria-label="Book details">
+    <div class="panel-heading"><span class="eyebrow">From the shelves</span><button id="close" aria-label="Close book details">Close ×</button></div>
+    <div id="book-info"></div>
+  </aside>
+  <aside id="browse" hidden aria-label="Browse library">
+    <div class="panel-heading"><span class="eyebrow">Your collection</span><button id="close-browse" aria-label="Close collection">Close ×</button></div>
+    <div class="browse-intro"><h2>Find your next chapter.</h2><label for="search">Search title, author, series, or genre</label><input id="search" type="search" placeholder="What would you like to discover?" autocomplete="off"/>
+      <div class="filters"><label>Format<select id="format-filter"><option value="all">All formats</option><option value="audio">Audiobooks</option><option value="ebook">E-books</option></select></label><label>Sort by<select id="sort-books"><option value="title">Title</option><option value="author">Author</option></select></label></div>
+      <p id="count" aria-live="polite"></p>
+    </div>
+    <div class="collection-scroll"><ul id="results"></ul><button id="more-books" hidden>Show more</button></div>
+  </aside>
+  <footer>
+    <div class="controls"><span class="keycap">W A S D</span><span>or arrows to walk<br>Drag to look · E to inspect</span></div>
+    <span id="source-notice" aria-live="polite">A quiet place for your collection. Connect Audiobookshelf to begin.</span>
+    <div class="touch" aria-label="Movement controls"><button data-move="ArrowLeft" aria-label="Turn left">↶</button><button data-move="w" aria-label="Walk forward">↑</button><button data-move="s" aria-label="Walk backward">↓</button><button data-move="ArrowRight" aria-label="Turn right">↷</button></div>
+  </footer>
+  <script type="module" src="/src/books/preview.ts"></script>
+</body>
+</html>

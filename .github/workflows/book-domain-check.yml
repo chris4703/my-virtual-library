@@ -1,0 +1,28 @@
+name: Validate My Virtual Library changes
+
+on:
+  pull_request:
+    branches: [develop]
+  push:
+    branches: [develop]
+
+permissions:
+  contents: read
+
+jobs:
+  book-domain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: '1'
+      - name: Test book catalog
+        run: node --experimental-strip-types --test tests/book-catalog.test.ts
+      - name: Validate application build and existing tests
+        run: npm run check
