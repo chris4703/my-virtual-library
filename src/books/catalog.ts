@@ -3,7 +3,7 @@
  * IDs are stable and source-scoped; ISBNs and other identifiers are optional.
  */
 
-export type BookFormat = 'epub' | 'pdf' | 'm4b' | 'mp3' | 'other-audio';
+export type BookFormat = 'epub' | 'pdf' | 'mobi' | 'other-ebook' | 'm4b' | 'mp3' | 'other-audio';
 
 export interface BookAuthor {
   id?: string;
@@ -31,10 +31,13 @@ export interface BookEdition {
 export interface Book {
   id: string;
   sourceId: string;
+  sourceItemId?: string;
   title: string;
   subtitle?: string;
   description?: string;
   authors: BookAuthor[];
+  narrators?: string[];
+  publisher?: string;
   series?: BookSeries;
   genres: string[];
   publicationYear?: number;

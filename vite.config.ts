@@ -1,4 +1,6 @@
 import { defineConfig, loadEnv } from "vite";
+// @ts-expect-error server-only JavaScript middleware
+import { audiobookshelfPlugin } from "./tools/audiobookshelf.mjs";
 // @ts-expect-error plain JavaScript build helper, not browser code
 import { buildSourcePlugin } from "./tools/build-source.mjs";
 import { compressedModelsPlugin } from "./tools/compressed-models.mjs";
@@ -568,6 +570,7 @@ export default defineConfig(async () => ({
     // First: everything below it answers only to an allowed Host header.
     hostGuardPlugin(),
     localEndpointGuardPlugin(),
+    audiobookshelfPlugin({ ...envFromFiles, ...process.env }),
     clientErrorRelayPlugin(),
     feedbackPinPlugin(),
     mpvPlayerPlugin(),

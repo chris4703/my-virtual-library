@@ -1,8 +1,12 @@
 import { BAYS, stepPosition } from './walk.ts';
 import * as THREE from 'three';
 import { DEMO_BOOKS } from './demo.ts';
-import { bookDisplayAuthor, formatsForBook, type Book } from './catalog.ts';
+import { bookDisplayAuthor, formatsForBook, sortBooksForShelf, type Book } from './catalog.ts';
 
+let books = DEMO_BOOKS;
+let openBase = '';
+let shelfPage = 0;
+const SHELF_CAPACITY = 576;
 const container = document.querySelector<HTMLDivElement>('#stage')!;
 const details = document.querySelector<HTMLElement>('#details')!;
 const info = document.querySelector<HTMLDivElement>('#book-info')!;
@@ -88,8 +92,9 @@ const palette = ['#395c56','#a15b42','#354961','#806c4e','#6a4c61','#877c51','#4
 
 function spineTexture(book: Book, color: string): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
-  canvas.width = 256; canvas.height = 1024;
+  canvas.width = 64; canvas.height = 256;
   const ctx = canvas.getContext('2d')!;
+  ctx.scale(.25, .25);
   ctx.fillStyle = color; ctx.fillRect(0, 0, 256, 1024);
   ctx.fillStyle = '#ead9af'; ctx.fillRect(18, 30, 220, 3); ctx.fillRect(18, 990, 220, 3);
   ctx.save(); ctx.translate(128, 512); ctx.rotate(-Math.PI / 2);
@@ -106,7 +111,8 @@ function spineTexture(book: Book, color: string): THREE.CanvasTexture {
   return texture;
 }
 
-const spineMaterials = DEMO_BOOKS.map((book,i)=>new THREE.MeshStandardMaterial({map:spineTexture(book,palette[i]),roughness:.85}));
+let spineMaterials: THREE.MeshStandardMaterial[] = [];
+const coverMaterials = palette.map(color => new THREE.MeshStandardMaterial({color, roughness:.8}));
 const pages = new THREE.MeshStandardMaterial({color:0xe2d7ba,roughness:1});
 BAYS.forEach((bay,bayIndex)=> {
   box(5.1,3.65,.16,bay.x,1.85,bay.z,wood);
@@ -117,13 +123,49 @@ BAYS.forEach((bay,bayIndex)=> {
   for(const side of [-1,1]) for(let row=0;row<4;row++) for(let col=0;col<12;col++) {
     const index=(bayIndex*5+row*3+col)%DEMO_BOOKS.length;
     const height=.58+(index%4)*.065;
-    const cover = new THREE.MeshStandardMaterial({color:palette[index],roughness:.8});
-    const mesh=new THREE.Mesh(new THREE.BoxGeometry(.28+(index%3)*.035,height,.48),[cover,cover,pages,pages,spineMaterials[index],spineMaterials[index]]);
+    const cover = coverMaterials[index];
+    const mesh=new THREE.Mesh(new THREE.BoxGeometry(.28+(index%3)*.035,height,.48),[cover,cover,pages,pages,cover,cover]);
     mesh.position.set(bay.x-2.18+col*.39,.24+row*.93+height/2,bay.z+side*.37);
     mesh.userData.bookIndex=index; scene.add(mesh); selectable.push(mesh);
   }
 });
 
+function stockShelves(): void {
+  for (const material of spineMaterials) { material.map?.dispose(); material.dispose(); }
+  spineMaterials = [];
+  const materials = new Map<number, THREE.MeshStandardMaterial>();
+  selectable.forEach((mesh, slot) => {
+    const index = openBase ? shelfPage * SHELF_CAPACITY + slot : slot % books.length;
+    mesh.visible = index < books.length;
+    if (!mesh.visible) return;
+    let spine = materials.get(index);
+    if (!spine) { spine = new THREE.MeshStandardMaterial({map:spineTexture(books[index],palette[index % palette.length]),roughness:.85}); materials.set(index,spine); spineMaterials.push(spine); }
+    const cover=coverMaterials[index % palette.length];
+    mesh.material=[cover,cover,pages,pages,spine,spine];mesh.userData.bookIndex=index;
+  });
+  document.querySelector('#collection-label')!.textContent = openBase ? `AUDIOBOOKSHELF · ${books.length} TITLES` : 'THE READING ROOM · 12 ORIGINAL TITLES';
+  const next=document.querySelector<HTMLButtonElement>('#next-shelves')!;
+  next.hidden=!openBase || books.length<=SHELF_CAPACITY;
+  next.textContent=`Next shelves (${shelfPage + 1}/${Math.ceil(books.length / SHELF_CAPACITY)})`;
+}
+stockShelves();
+document.querySelector('#next-shelves')!.addEventListener('click',()=>{shelfPage=(shelfPage+1)%Math.ceil(books.length/SHELF_CAPACITY);stockShelves();});
+const sourceButton=document.querySelector<HTMLButtonElement>('#connect-library')!;
+sourceButton.addEventListener('click',async()=>{
+  sourceButton.disabled=true;sourceButton.textContent='Loading library…';
+  try {
+    const response=await fetch('/__library/catalog', {cache:'no-store'});
+    if(!response.ok)throw new Error('connection');
+    const data=await response.json() as {books:Book[];openBase:string};
+    if(!Array.isArray(data.books)||!data.books.length)throw new Error('empty');
+    books=sortBooksForShelf(data.books);openBase=data.openBase;shelfPage=0;
+    try { localStorage.setItem('mvl-source','audiobookshelf'); } catch { /* Storage may be disabled. */ }
+    details.hidden=true;stockShelves();renderCatalog();
+    sourceButton.textContent='Refresh Audiobookshelf';
+    document.querySelector('#source-notice')!.textContent=`Connected · ${books.length} titles · Open a book in Audiobookshelf to read or listen`;
+  }catch{sourceButton.textContent='Retry Audiobookshelf';document.querySelector('#source-notice')!.textContent='Could not load your library. Check the server connection and account access. Your current shelves are still available.';}
+  finally{sourceButton.disabled=false;}
+});
 const browse=document.querySelector<HTMLElement>('#browse')!;
 const search=document.querySelector<HTMLInputElement>('#search')!;
 const hint=document.querySelector<HTMLElement>('#hint')!;
@@ -133,21 +175,44 @@ function inspect(book: Book): void {
   previousFocus=document.activeElement as HTMLElement;
   browse.hidden=true; info.replaceChildren();
   const cover=document.createElement('div'); cover.className='cover'; cover.textContent=book.title;
+  if(book.coverId && openBase){
+    const image=document.createElement('img');image.alt=`Cover of ${book.title}`;image.src=`/__library/cover/${encodeURIComponent(book.coverId)}`;image.referrerPolicy='no-referrer';
+    image.addEventListener('load',()=>{cover.replaceChildren(image);cover.classList.add('artwork');});
+  }
   const genre=document.createElement('span'); genre.className='eyebrow'; genre.textContent=book.genres.join(' · ');
   const title=document.createElement('h2'); title.textContent=book.title;
   const author=document.createElement('p'); author.textContent=`by ${bookDisplayAuthor(book)}`;
   const description=document.createElement('p'); description.textContent=book.description || 'No description available.';
   const formats=document.createElement('div');
-  formatsForBook(book).forEach(format=>{const tag=document.createElement('span');tag.className='tag';tag.textContent=format==='m4b'?'Audiobook · M4B':`E-book · ${format.toUpperCase()}`;formats.append(tag);});
-  const notice=document.createElement('p');notice.id='notice';notice.textContent='An original sample title. Connect your library in a future update to read or listen to your own books.';
-  info.append(genre,cover,title,author,description,formats,notice);details.hidden=false;document.querySelector<HTMLButtonElement>('#close')!.focus();
+  formatsForBook(book).forEach(format=>{const tag=document.createElement('span');tag.className='tag';tag.textContent=['m4b','mp3','other-audio'].includes(format)?'Audiobook':format==='other-ebook'?'E-book':`E-book · ${format.toUpperCase()}`;formats.append(tag);});
+  const metadata=document.createElement('dl');metadata.className='metadata';
+  function field(label:string,value:string|undefined):void{if(!value)return;const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;metadata.append(dt,dd);}
+  const duration=book.editions.find(edition=>edition.durationSeconds)?.durationSeconds;
+  const minutes=duration ? Math.round(duration/60) : 0;
+  field('Series',book.series ? `${book.series.name}${book.series.index!=null?` · Book ${book.series.index}`:''}`:undefined);
+  field('Narrator',book.narrators?.join(', '));
+  field('Length',duration?`${Math.floor(minutes/60)}h ${minutes%60}m`:undefined);
+  field('Published',book.publicationYear?.toString());field('Publisher',book.publisher);field('Language',book.language);field('ISBN',book.isbn);
+  if(book.subtitle){const subtitle=document.createElement('p');subtitle.textContent=book.subtitle;author.append(subtitle);}
+  const notice=document.createElement('div');notice.id='notice';
+  if(openBase && book.sourceId==='audiobookshelf'){
+    const links=new Set<string>();
+    for(const edition of book.editions){
+      const audio=['m4b','mp3','other-audio'].includes(edition.format);
+      const key=`${audio?'audio':'ebook'}:${edition.sourceItemId}`;if(links.has(key))continue;links.add(key);
+      const link=document.createElement('a');link.textContent=audio?'Audiobook in Audiobookshelf ↗':'E-book in Audiobookshelf ↗';
+      link.href=`${openBase}/item/${encodeURIComponent(edition.sourceItemId)}`;link.title='Opens this title’s Audiobookshelf page';link.target='_blank';link.rel='noopener noreferrer';notice.append(link);
+    }
+    if(!links.size){const link=document.createElement('a');link.textContent='View in Audiobookshelf ↗';link.href=`${openBase}/item/${encodeURIComponent(book.sourceItemId || '')}`;link.target='_blank';link.rel='noopener noreferrer';notice.append(link);}
+  }else notice.textContent='An original sample title. Load Audiobookshelf to browse your own collection.';
+  info.append(genre,cover,title,author,formats,notice,description,metadata);details.hidden=false;document.querySelector<HTMLButtonElement>('#close')!.focus();
 }
 function renderCatalog():void {
   const query=search.value.toLocaleLowerCase().trim();
-  const books=DEMO_BOOKS.filter(b=>[b.title,bookDisplayAuthor(b),...b.genres].join(' ').toLocaleLowerCase().includes(query));
-  document.querySelector('#count')!.textContent=`${books.length} ${books.length===1?'title':'titles'}${books.length?'':' · try another search'}`;
+  const matches=books.filter(b=>[b.title,bookDisplayAuthor(b),...b.genres].join(' ').toLocaleLowerCase().includes(query));
+  document.querySelector('#count')!.textContent=`${matches.length} ${matches.length===1?'title':'titles'}${matches.length?'':' · try another search'}`;
   const results=document.querySelector('#results')!;results.replaceChildren();
-  books.forEach(book=>{const li=document.createElement('li'),button=document.createElement('button'),label=document.createElement('small');button.className='book-row';button.textContent=book.title;label.textContent=`${bookDisplayAuthor(book)} · ${book.genres.join(', ')}`;button.append(label);button.addEventListener('click',()=>inspect(book));li.append(button);results.append(li);});
+  matches.forEach(book=>{const li=document.createElement('li'),button=document.createElement('button'),label=document.createElement('small');button.className='book-row';button.textContent=book.title;label.textContent=`${bookDisplayAuthor(book)} · ${book.genres.join(', ')}`;button.append(label);button.addEventListener('click',()=>inspect(book));li.append(button);results.append(li);});
 }
 search.addEventListener('input',renderCatalog);renderCatalog();
 document.querySelector('#catalog')!.addEventListener('click',()=>{details.hidden=true;browse.hidden=!browse.hidden;if(!browse.hidden)search.focus();});
@@ -181,7 +246,7 @@ renderer.domElement.addEventListener('pointercancel',()=>{drag=null;});
 renderer.domElement.addEventListener('pointerup',event=>{
   if(drag && drag.distance<8){
     const rect=renderer.domElement.getBoundingClientRect();pointer.set((event.clientX-rect.left)/rect.width*2-1,-(event.clientY-rect.top)/rect.height*2+1);raycaster.setFromCamera(pointer,camera);
-    const hit=raycaster.intersectObjects(selectable)[0];if(hit && hit.distance<8)inspect(DEMO_BOOKS[hit.object.userData.bookIndex as number]);
+    const hit=raycaster.intersectObjects(selectable.filter(mesh=>mesh.visible))[0];if(hit && hit.distance<8)inspect(books[hit.object.userData.bookIndex as number]);
   }drag=null;
 });
 window.addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
@@ -198,8 +263,10 @@ function animate(now:number):void {
   }else keys.clear();
   camera.rotation.set(pitch,yaw,0);
   raycaster.setFromCamera(new THREE.Vector2(0,0),camera);
-  const hit=raycaster.intersectObjects(selectable)[0];
-  hint.textContent=hit && hit.distance<8?`${DEMO_BOOKS[hit.object.userData.bookIndex as number].title} · click to inspect`:'Explore the aisles · browse the collection to find a title';
+  const hit=raycaster.intersectObjects(selectable.filter(mesh=>mesh.visible))[0];
+  hint.textContent=hit && hit.distance<8?`${books[hit.object.userData.bookIndex as number].title} · click to inspect`:'Explore the aisles · browse the collection to find a title';
   renderer.render(scene,camera);
 }
 renderer.setAnimationLoop(animate);
+
+try { if(localStorage.getItem('mvl-source')==='audiobookshelf')sourceButton.click(); } catch { /* Manual loading remains available. */ }

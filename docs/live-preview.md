@@ -41,3 +41,19 @@ Open `http://localhost:1420/book-preview.html`. For a local clone, normal Git us
 - Reading and audiobook playback remain unimplemented; the interface explicitly identifies the sample catalog.
 
 Verification: run `npm run check` and manually check walking, shelf collision, entrance reset, spine selection, search by author and genre, empty search results, and the collection/details panels at a narrow phone viewport.
+
+## Audiobookshelf connection (private preview)
+
+The reading room can load a real catalog through a server-only gateway. Configure these **non-VITE-prefixed** environment variables when starting the development server:
+
+- `MVL_ABS_URL`: fixed Audiobookshelf base URL, including any reverse-proxy subpath; use HTTPS except for explicitly supported local container/loopback addresses.
+- `MVL_ABS_LIBRARY_ID`: the one library this gateway may read.
+- `MVL_ABS_USERNAME` and `MVL_ABS_PASSWORD`: a dedicated non-admin Audiobookshelf account with no upload, edit, or delete permissions.
+
+Supply the password through a secret environment manager or hidden terminal input (`read -rs MVL_ABS_PASSWORD` followed by `export MVL_ABS_PASSWORD`). Do not put it in shell command arguments, screenshots, checked-in configuration, or any `VITE_` variable. The current Codespace setup keeps the password only in its running shell/server environment; restarting that session requires supplying it again.
+
+Click **Load Audiobookshelf** in the reading room. Only this source preference is remembered in browser storage, so later visits reconnect automatically; catalog data and credentials are not persisted in browser storage. The server logs in using Audiobookshelf's user authentication flow, keeps access/rotating refresh tokens in memory, fetches catalog pages, and returns only the normalized book fields. The browser receives neither credentials nor tokens, filesystem paths, or raw upstream objects. Metadata is cached in server memory for one minute. There are no write, media-download, arbitrary URL proxy, or account-management endpoints. Cover reads are limited to IDs actually present in the configured library, with image-type and response-size limits. Cross-site browser requests are rejected.
+
+All titles are searchable. The room displays up to 576 distinct items at a time; **Next shelves** cycles through the remaining items. Existing source editions stay separate; duplicate-title grouping is future work. Covers are loaded on demand in book details. Format-specific **Audiobook in Audiobookshelf** and **E-book in Audiobookshelf** links open the original item's page in a new tab; Audiobookshelf handles its own browser sign-in, reading, listening, and progress. In-app playback/progress synchronization is not implemented.
+
+This shared-account gateway relies on **private Codespaces forwarding** for viewer access control. Keep port 1420 private. Before any public or household deployment, add application authentication and decide whether users share a catalog or sign in individually. The middleware is installed for both Vite development and Vite preview; a static-only deployment cannot serve the gateway. No Audiobookshelf data or cover art belongs in Git, build artifacts, or public test fixtures.
