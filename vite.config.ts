@@ -587,6 +587,7 @@ export default defineConfig(async () => ({
       // release archives, and the build must work for both.
       input: Object.fromEntries(Object.entries({
         main: path.join(import.meta.dirname, "index.html"),
+        bookpreview: path.join(import.meta.dirname, "book-preview.html"),
         harness: path.join(import.meta.dirname, "harness.html"),
         assetviewer: path.join(import.meta.dirname, "asset-viewer.html"),
         remote: path.join(import.meta.dirname, "remote.html"),
