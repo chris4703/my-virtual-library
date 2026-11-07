@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>My Virtual Library — Bookstore Prototype</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, sans-serif; background: #171917; color: #f8ecd5; }
+    body { margin: 0; overflow: hidden; }
+    #stage { position: fixed; inset: 0; }
+    .top { position: fixed; top: 18px; left: 20px; z-index: 2; padding: 14px 18px; background: #111b17e8; border: 1px solid #b5966266; border-radius: 14px; max-width: min(88vw, 450px); }
+    h1 { margin: 0 0 4px; font: 600 24px Georgia,serif; }
+    p { margin: 0; line-height: 1.45; color: #e1d3b8; }
+    .hint { margin-top: 8px; font-size: 13px; }
+    aside { position: fixed; z-index: 3; right: 20px; bottom: 20px; width: min(360px, calc(100vw - 72px)); padding: 22px; border-radius: 16px; border: 1px solid #c0a57b; background: #18231ef2; box-shadow: 0 10px 50px #0008; }
+    aside[hidden] { display: none; }
+    aside h2 { font: 600 25px Georgia,serif; margin: 10px 0; }
+    aside p { margin: 10px 0; }
+    button { background: #e2c48d; color: #17221a; border: 0; border-radius: 8px; padding: 9px 13px; font-weight: 700; cursor: pointer; }
+    button:focus-visible { outline: 3px solid white; outline-offset: 3px; }
+    #close { float: right; }
+    footer { position: fixed; left: 20px; bottom: 20px; z-index: 2; font-size: 13px; background: #111b17e8; padding: 10px 14px; border-radius: 10px; }
+  </style>
+</head>
+<body>
+  <div id="stage" role="img" aria-label="Interactive three dimensional library shelves"></div>
+  <header class="top"><h1>My Virtual Library</h1><p>A first look at your future walkable bookshelf.</p><p class="hint">Click a book spine to inspect it. Press A / D or arrow keys to look left or right.</p></header>
+  <aside id="details" hidden aria-live="polite"><button id="close" aria-label="Close book details">Close</button><div id="book-info"></div></aside>
+  <footer>Prototype — original sample titles only. Reading and listening are not implemented yet.</footer>
+  <script type="module" src="/src/books/preview.ts"></script>
+</body>
+</html>
